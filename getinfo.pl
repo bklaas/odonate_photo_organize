@@ -144,7 +144,6 @@ sub title_case {
     my @words = split " ", $s;
     my @r;
     for my $w (@words) {
-        print "|$w|\n";
         if ($w eq 'and' || $w eq 'or') {
             push @r, $w;
         }
@@ -164,10 +163,14 @@ sub copy_img {
         mkdir($d);
     }
     my $i = 1;
-    my $out = "$d/${species}_$i.jpg";
-    while (-e "$d/$out") {
+    my $pad = sprintf("%02d", $i);
+    my $out = "$d/${species}_${pad}.jpg";
+    until (! -e $out) {
         $i++;
+        #$out = "$d/${species}_$i.jpg";
+        $pad = sprintf("%02d", $i);
+        $out = "$d/${species}_${pad}.jpg";
     }
-    print "Copy $img to $d/$out\n";
+    print "Copy $img to $out\n";
     copy($img, $out);
 }
