@@ -37,7 +37,7 @@ for my $img (@$images) {
     #print "!!!\t$date_created\n";
     my $orig_caption = $caption;
     if ($orig_caption eq "n") {
-        copy($i, "$out_dir/unidentified/$img");
+        copy_img($img, 'unidentified');
         next;
     }
     $caption =~ s/--.*//;
@@ -95,7 +95,7 @@ for my $img (@$images) {
     $caption =~ s/\?$//i;
     $caption =~ s/\s+$//i;
     $caption =~ s/^meadowhawk$/meadowhawk sp./i;
-    $caption =~ s/sp./species/i;
+    $caption =~ s/sp\./species/i;
 
 
        
@@ -123,9 +123,9 @@ for my $img (@$images) {
 }
 
 #print dump($species_list);
-for my $s (sort keys %$species_list) {
-    print "|" . $s . "|" . "\t|$species_list->{$s}|\n";
-}
+#for my $s (sort keys %$species_list) {
+#    print "|" . $s . "|" . "\t|$species_list->{$s}|\n";
+#}
 
 # pics that start with "unidentified" go into unidentified
 
@@ -139,16 +139,35 @@ sub get_images {
     return $ret;
 }
 
+sub title_case {
+    my $s = shift;
+    my @words = split " ", $s;
+    my @r;
+    for my $w (@words) {
+        print "|$w|\n";
+        if ($w eq 'and' || $w eq 'or') {
+            push @r, $w;
+        }
+        else {
+            push @r, ucfirst($w);
+        }
+    }
+    return join(" ", @r);
+}
+
 sub copy_img {
     my $img = shift;
     my $species = shift;
+    $species = title_case($species);
     my $d = "$out_dir/$species";
     if (! -d ($d)) {
-        mkdir("$out_dir/$species");
+        mkdir($d);
     }
     my $i = 1;
-    while (-e "$d/${species}_$i.jpg") {
+    my $out = "$d/${species}_$i.jpg";
+    while (-e "$d/$out") {
         $i++;
-        print "Copy $img to $d/${species}_$i.jpg\n";
     }
+    print "Copy $img to $d/$out\n";
+    copy($img, $out);
 }
