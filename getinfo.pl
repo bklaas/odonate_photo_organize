@@ -20,12 +20,9 @@ for my $img (@$images) {
      
     # Check if file had IPTC data
     unless (defined($info)) { 
-        print STDERR "No info in $img: copying to organized/no_info/$img\n";
-        if (! -d ("$out_dir/no_info")) {
-            mkdir("$out_dir/no_info");
-        }
-        copy($i, "$out_dir/no_info/$img");
-        next;
+        print STDERR "No info in $img: copying to organized/unidentified/$img\n";
+        copy_img($i, 'unidentified');
+       next;
     }
        
     # Get list of keywords, supplemental categories, or contacts
@@ -35,9 +32,12 @@ for my $img (@$images) {
        
     # Get specific attributes...
     my $caption = $info->Attribute('caption/abstract');
+ 
+    #my $date_created = $info->Attribute('writer/editor');
+    #print "!!!\t$date_created\n";
     my $orig_caption = $caption;
     if ($orig_caption eq "n") {
-        copy($i, "$out_dir/no_info/$img");
+        copy($i, "$out_dir/unidentified/$img");
         next;
     }
     $caption =~ s/--.*//;
@@ -51,6 +51,7 @@ for my $img (@$images) {
     $caption =~ s/immature//i;
     $caption =~ s/with prey//i;
     $caption =~ s/powderd/powdered/i;
+    $caption =~ s/dull//i;
     $caption =~ s/blue form//i;
     $caption =~ s/brown form//i;
     $caption =~ s/with butterfly.*//i;
@@ -59,12 +60,42 @@ for my $img (@$images) {
     $caption =~ s/feeding on butterfly//i;
     $caption =~ s/in spider's web//i;
     $caption =~ s/bluets/bluet/i;
+    $caption =~ s/femlae//i;
+    $caption =~ s/dull$//i;
+    $caption =~ s/blue fronted/blue-fronted/i;
+    $caption =~ s/ephemeral//i;
+    $caption =~ s/white tailed skimmer/white-tail/i;
+    $caption =~ s/white tail/white-tail/i;
+    $caption =~ s/whitetailed skimmer/white-tail/i;
+    $caption =~ s/white face/whiteface/i;
+    $caption =~ s/fortail/forktail/i;
+    $caption =~ s/forttail/forktail/i;
+    $caption =~ s/pond hawk/pondhawk/i;
+    $caption =~ s/familair/familiar/i;
+    $caption =~ s/laeg/leg/i;
+    $caption =~ s/spinyleg/spineyleg/i;
+    $caption =~ s/flagtailed/flag-tailed/i;
+    $caption =~ s/spiney-leg/spineyleg/i;
+    $caption =~ s/spiney leg/spineyleg/i;
+    $caption =~ s/spiny-legged flagtail/flag-tailed spineyleg/i;
+    $caption =~ s/teneril//i;
+    $caption =~ s/bluet\?/bluet/i;
+    $caption =~ s/haek/hawk/i;
+    $caption =~ s/skimmer-/skimmer/i;
+    $caption =~ s/amber wing/amberwing/i;
+    $caption =~ s/blue dancer/blue dasher/i;
+    $caption =~ s/dot-tailed skimmer/dot-tailed whiteface/i;
+    $caption =~ s/yellow-legged or //i;
+    $caption =~ s/1$//i;
+    $caption =~ s/2$//i;
     $caption =~ s/,//i;
     $caption =~ s/\(.*//i;
     $caption =~ s/\s+-.*//i;
     $caption =~ s/\-$//i;
     $caption =~ s/\?$//i;
     $caption =~ s/\s+$//i;
+    $caption =~ s/^meadowhawk$/meadowhawk sp./i;
+    $caption =~ s/sp./species/i;
 
 
        
@@ -83,12 +114,20 @@ for my $img (@$images) {
     ##### See disclaimer in 'SAVING FILES' section #####
     #$info->Save();
     #$info->SaveAs('new-file-name.jpg');
+    if ($caption =~ /^unidentified/) {
+        copy_img($i, 'unidentified');
+    }
+    else {
+        copy_img($i, $caption);
+    }
 }
 
 #print dump($species_list);
 for my $s (sort keys %$species_list) {
-    print $s . "\t$species_list->{$s}\n";
+    print "|" . $s . "|" . "\t|$species_list->{$s}|\n";
 }
+
+# pics that start with "unidentified" go into unidentified
 
 sub get_images {
     my $dir = shift;
@@ -98,4 +137,18 @@ sub get_images {
         push @$ret, $i if $i =~ /JPG$/i && -f "$dir/$i";
     }
     return $ret;
+}
+
+sub copy_img {
+    my $img = shift;
+    my $species = shift;
+    my $d = "$out_dir/$species";
+    if (! -d ($d)) {
+        mkdir("$out_dir/$species");
+    }
+    my $i = 1;
+    while (-e "$d/${species}_$i.jpg") {
+        $i++;
+        print "Copy $img to $d/${species}_$i.jpg\n";
+    }
 }
