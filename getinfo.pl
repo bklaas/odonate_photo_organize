@@ -7,7 +7,10 @@ use Data::Dump qw(dump);
 use File::Copy;
  
 my $dir = "/home/benklaas/git/odonate_photo_organize/originals";
-my $out_dir = "organized";
+my $out_dir = "Hayden Park Odonate Photos For Iowa Insects";
+if (!-d $out_dir) {
+    mkdir($out_dir);
+}
 my $images = get_images($dir);
 
 # Create new info object
@@ -20,7 +23,7 @@ for my $img (@$images) {
      
     # Check if file had IPTC data
     unless (defined($info)) { 
-        print STDERR "No info in $img: copying to organized/unidentified/$img\n";
+        print STDERR "No info in $img: copying to $out_dir/unidentified/$img\n";
         copy_img($i, 'unidentified');
        next;
     }
